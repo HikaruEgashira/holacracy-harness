@@ -18,7 +18,7 @@ GOV_SKILL_PROJ="$PROJECT_DIR/.claude/skills/governance/SKILL.md"
 GOV_SKILL_USER="$HOME/.claude/skills/governance/SKILL.md"
 if [ ! -f "$GOV_SKILL_PROJ" ] && [ ! -f "$GOV_SKILL_USER" ]; then
   echo "violation of clause 1: governance SKILL.md missing" >&2
-  echo "  install via: gh skill install plenoai/holacracy-harness governance --agent claude-code --scope user" >&2
+  echo "  install via: gh skill install HikaruEgashira/holacracy-harness governance --agent claude-code --scope user" >&2
   exit 1
 fi
 

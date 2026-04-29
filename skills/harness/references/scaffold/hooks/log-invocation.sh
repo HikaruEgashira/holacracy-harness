@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 # log-invocation.sh — PostToolUse(Task) hook. Appends one record to stats.jsonl.
-set -e
+# Hook failures must never block the session, but should be debuggable —
+# stderr goes to hook-errors.log instead of /dev/null.
+set -u
+STATE_DIR="${CLAUDE_PROJECT_DIR:-.}/.claude/state"
+STATS_FILE="$STATE_DIR/stats.jsonl"
+ERR_LOG="$STATE_DIR/hook-errors.log"
+mkdir -p "$STATE_DIR"
+
 INPUT=$(cat)
-STATS_FILE="${CLAUDE_PROJECT_DIR:-.}/.claude/state/stats.jsonl"
-mkdir -p "$(dirname "$STATS_FILE")"
-echo "$INPUT" | jq -c --arg ts "$(date -u +%FT%TZ)" '
+if ! echo "$INPUT" | jq -c --arg ts "$(date -u +%FT%TZ)" '
   {
     ts: $ts,
     role: (.tool_input.subagent_type // .tool_input.agent // "unknown"),
@@ -17,5 +22,7 @@ echo "$INPUT" | jq -c --arg ts "$(date -u +%FT%TZ)" '
     duration_ms: (.duration_ms // 0),
     session_id: (.session_id // "unknown")
   }
-' >> "$STATS_FILE" 2>/dev/null || true
+' >> "$STATS_FILE" 2>>"$ERR_LOG"; then
+  printf '[%s] log-invocation: jq failed\n' "$(date -u +%FT%TZ)" >> "$ERR_LOG"
+fi
 exit 0
