@@ -1,6 +1,6 @@
 # holacracy-harness
 
-**Self-Governing Agent Team Architect for Claude Code.** Two `gh skill`-installable skills that design Holacracy-style agent teams and then continuously evolve them.
+**Self-Governing Agent Team Architect for Claude Code.** Declare your Anchor Circle Purpose, and `harness` designs Holacracy roles that serve it; `governance` evolves the role set as the Purpose evolves, bounded by a constitution that protects the Purpose itself.
 
 [日本語](./README_JA.md)
 
@@ -8,8 +8,8 @@
 
 A single-repo plugin distributed via [`gh skill`](https://cli.github.com/manual/gh_skill_install). Two skills ship from this repo:
 
-- **`harness`** (Layer 1) — designs the initial role architecture and writes the runtime scaffold
-- **`governance`** (Layer 2) — autonomously adds, updates, and deletes roles based on invocation statistics
+- **`harness`** (Layer 1) — facilitates Anchor Circle articulation and writes the runtime scaffold
+- **`governance`** (Layer 2) — autonomously adds, updates, and deletes roles based on invocation statistics, informed by the Anchor Circle Purpose
 
 Both auto-update via `gh skill update --all`.
 
@@ -35,17 +35,17 @@ In any git-initialized project where the skills are installed:
 
 ```bash
 $ claude
-> Build a harness for this project. We do <your domain>.
+> Build a harness for this project.
 ```
 
 The `harness` skill walks the user through:
 
 ```
-Phase 1: Domain Analysis
-Phase 2: Role Architecture (one of 6 patterns)
-Phase 3: Scaffold Installation (CONSTITUTION.md, hooks, tests)
+Phase 1: Anchor Circle Articulation (Purpose / Domains / Accountabilities)
+Phase 2: Role Architecture (one of 6 layouts)
+Phase 3: Scaffold Installation (CONSTITUTION.md, ANCHOR.md, hooks, tests)
 Phase 4: Role File Generation (.claude/agents/)
-Phase 5: Domain-specific Constitution Clauses
+Phase 5: Anchor Circle Policies
 Phase 6: Validation & Smoke Test
 ```
 
@@ -54,7 +54,8 @@ After Phase 6, the project is fully wired:
 ```
 your-project/
 ├── .claude/
-│   ├── CONSTITUTION.md      # 10 universal + your local clauses
+│   ├── ANCHOR.md            # Anchor Circle Purpose (human-authored)
+│   ├── CONSTITUTION.md      # 12 universal + your Anchor Circle Policies
 │   ├── settings.json        # 3 hooks wired
 │   ├── agents/              # 3-5 generated roles, governance evolves these
 │   ├── hooks/               # logging + threshold checking
@@ -76,16 +77,18 @@ branch to the remote is separately gated behind `GOVERNANCE_AUTO_PUSH=1`.
 With neither flag set, threshold trips are logged but governance never
 acts unsupervised.
 
-## Architecture patterns
+## Role arrangement layouts
 
-| Pattern | Use when |
+Non-normative aids for Phase 2. Not Holacracy primitives.
+
+| Layout | Use when the Anchor Circle Purpose is... |
 |---|---|
-| Pipeline | Linear, staged work |
-| Fan-out / Fan-in | Multi-perspective investigation |
-| Expert Pool | Reactive, varied requests |
-| Producer / Reviewer | Quality-critical |
-| Supervisor | Dynamic, plan-driven |
-| Network | Exploratory |
+| Pipeline | linear and staged |
+| Fan-out / Fan-in | multi-perspective |
+| Expert Pool | reactive and varied |
+| Producer / Reviewer | quality-critical |
+| Supervisor | dynamic and uncertain |
+| Network | exploratory |
 
 ## Updating
 
@@ -94,8 +97,8 @@ acts unsupervised.
   content drift, not just version bumps.
 - **Scaffold** in your project (CONSTITUTION universal section, hooks,
   tests) updates via `./scripts/update-scaffold.sh`. The script
-  preserves your `.claude/agents/`, `.claude/state/`, and the LOCAL
-  section of `CONSTITUTION.md`.
+  preserves your `.claude/agents/`, `.claude/state/`,
+  `.claude/ANCHOR.md`, and the LOCAL section of `CONSTITUTION.md`.
 
 ## Two-layer model
 
@@ -124,11 +127,12 @@ HikaruEgashira/holacracy-harness/
 │   ├── harness/                              # Layer 1 skill
 │   │   ├── SKILL.md
 │   │   └── references/
-│   │       ├── role-design-patterns.md       # 6 patterns
-│   │       ├── role-template.md              # Holacracy role format
+│   │       ├── role-design-patterns.md       # 6 layouts (non-normative)
+│   │       ├── role-template.md              # role frontmatter spec
 │   │       ├── tension-types.md
 │   │       ├── constitution-guide.md
 │   │       └── scaffold/                     # written into user project at Phase 3
+│   │           ├── ANCHOR.md                 # Anchor Circle template
 │   │           ├── CONSTITUTION.md           # BEGIN/END markers
 │   │           ├── settings.json
 │   │           ├── hooks/

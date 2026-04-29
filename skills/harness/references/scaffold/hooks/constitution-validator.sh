@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# constitution-validator.sh — Verifies a role file against clauses 1, 2, 9, 10.
+# constitution-validator.sh — Verifies a role file against clauses 1, 2, 9, 10, 11.
 set -e
 FILE="$1"
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
@@ -7,7 +7,7 @@ PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 
 # Clause 9: protected paths
 case "$FILE" in
-  *CONSTITUTION.md|*settings.json)
+  *CONSTITUTION.md|*ANCHOR.md|*settings.json)
     echo "violation of clause 9: protected file $FILE" >&2; exit 1;;
   */hooks/*|*/skills/governance/*)
     echo "violation of clause 9: protected directory $FILE" >&2; exit 1;;
@@ -22,6 +22,14 @@ if [ ! -f "$GOV_SKILL_PROJ" ] && [ ! -f "$GOV_SKILL_USER" ]; then
   exit 1
 fi
 
+# Clause 12 prerequisite: ANCHOR.md must exist (Anchor Circle declaration)
+ANCHOR="$PROJECT_DIR/.claude/ANCHOR.md"
+if [ ! -f "$ANCHOR" ]; then
+  echo "scaffold incomplete: $ANCHOR missing" >&2
+  echo "  re-run the harness skill, or copy from skills/harness/references/scaffold/ANCHOR.md" >&2
+  exit 1
+fi
+
 # Clause 2: required frontmatter fields
 if [ -f "$FILE" ]; then
   for field in name purpose accountabilities; do
@@ -30,5 +38,18 @@ if [ -f "$FILE" ]; then
       exit 1
     fi
   done
+
+  # Clause 11: serves_purpose must be present.
+  # Default: warn (1-release grace period for pre-clause-11 role files).
+  # Strict: HARNESS_STRICT_PURPOSE=1 → fail.
+  if ! grep -q "^serves_purpose:" "$FILE"; then
+    if [ "${HARNESS_STRICT_PURPOSE:-0}" = "1" ]; then
+      echo "violation of clause 11: missing 'serves_purpose' in $FILE" >&2
+      exit 1
+    else
+      echo "warning (clause 11): missing 'serves_purpose' in $FILE" >&2
+      echo "  set HARNESS_STRICT_PURPOSE=1 to make this a hard failure" >&2
+    fi
+  fi
 fi
 exit 0

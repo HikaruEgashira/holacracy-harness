@@ -8,8 +8,9 @@ The file has two regions:
 - **UNIVERSAL** — managed by upstream. `./scripts/update-scaffold.sh`
   overwrites this region. **Do not edit between the BEGIN UNIVERSAL
   and END UNIVERSAL markers.**
-- **LOCAL** — managed by this project. The harness skill writes
-  domain-specific clauses here in Phase 5. You may edit freely.
+- **LOCAL** — managed by this project. Holds the Anchor Circle
+  Policies, written in Phase 5. The Anchor Circle Purpose itself
+  lives in `.claude/ANCHOR.md`.
 
 <!-- BEGIN UNIVERSAL -->
 ## Universal invariants
@@ -36,12 +37,21 @@ The file has two regions:
 7. A single governance run may apply at most 3 changes (additions,
    updates, and deletions combined).
 8. The total number of roles must remain in the closed interval [2, 20].
-9. `CONSTITUTION.md` UNIVERSAL section, `.claude/settings.json`,
-   `.claude/skills/governance/`, and `.claude/hooks/` are read-only
-   to `governance`.
+9. `CONSTITUTION.md` UNIVERSAL section, `.claude/ANCHOR.md`,
+   `.claude/settings.json`, `.claude/skills/governance/`, and
+   `.claude/hooks/` are read-only to `governance`.
 10. Deleted role files must be moved to
     `.claude/agents/.archive/<UTC-date>/` and retained for at least 7
     days before any garbage collection.
+
+## Anchor Circle invariants
+
+11. Every role must declare `serves_purpose`, a one-line statement
+    connecting the role to the Purpose in `.claude/ANCHOR.md`.
+    Validator checks presence only; semantic alignment is the human's
+    responsibility.
+12. `governance` must not modify `.claude/ANCHOR.md`. The Anchor
+    Circle Purpose is authored by the human.
 
 ## Decision priority
 
@@ -56,16 +66,16 @@ in this order, stopping at clause 7's limit of 3:
 
 ## How invariants are checked
 
-- `hooks/constitution-validator.sh` enforces clauses 1, 2, 9, 10
+- `hooks/constitution-validator.sh` enforces clauses 1, 2, 9, 10, 11
 - `hooks/domain-checker.sh` enforces clause 3
 - `tests/governance-tests.sh` enforces clauses 4, 5, 7, 8
 <!-- END UNIVERSAL -->
 
 <!-- BEGIN LOCAL -->
-## Domain-specific invariants
+## Anchor Circle Policies
 
 <!--
-The harness skill appends clauses here during Phase 5.
-Numbering starts at 11. Never overwritten by upstream updates.
+Phase 5 appends Policies here, numbered from 13. Never overwritten by
+upstream updates.
 -->
 <!-- END LOCAL -->
