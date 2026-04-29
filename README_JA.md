@@ -1,6 +1,6 @@
 # holacracy-harness
 
-**Claude Code向けの自己統治型エージェントチーム設計者。** `gh skill`でインストール可能な2つのスキルが、Holacracy的なエージェントチームを設計し、その後継続的に進化させます。
+**Claude Code向けの自己統治型エージェントチーム設計者。** Anchor Circle Purpose を宣言すれば、`harness` がそれに奉仕する Holacracy ロールを設計し、`governance` が Purpose の進化に合わせてロール集合を進化させます。Purpose 自体は憲法で保護されます。
 
 [English](./README.md)
 
@@ -8,8 +8,8 @@
 
 [`gh skill`](https://cli.github.com/manual/gh_skill_install) で配布される単一リポジトリのプラグイン。2つのスキルが同梱:
 
-- **`harness`** (Layer 1) — 初期のロールアーキテクチャを設計し、ランタイムscaffoldを書き出す
-- **`governance`** (Layer 2) — 呼び出し統計に基づきロールを自律的に追加・更新・削除
+- **`harness`** (Layer 1) — Anchor Circle の articulation を facilitate し、ランタイム scaffold を書き出す
+- **`governance`** (Layer 2) — 呼び出し統計に基づきロールを自律的に追加・更新・削除 (Anchor Circle Purpose で文脈づけ)
 
 両方とも `gh skill update --all` で自動更新。
 
@@ -35,17 +35,17 @@ git初期化済みでスキルをインストールしたプロジェクトで:
 
 ```bash
 $ claude
-> ハーネスを構成して。<ドメイン記述>
+> ハーネスを構成して
 ```
 
 `harness`スキルがガイドします:
 
 ```
-Phase 1: ドメイン分析
-Phase 2: ロールアーキテクチャ設計 (6パターンから選択)
-Phase 3: Scaffoldインストール (CONSTITUTION.md, hooks, tests)
+Phase 1: Anchor Circle Articulation (Purpose / Domains / Accountabilities)
+Phase 2: ロールアーキテクチャ設計 (6レイアウトから選択)
+Phase 3: Scaffoldインストール (CONSTITUTION.md, ANCHOR.md, hooks, tests)
 Phase 4: ロールファイル生成 (.claude/agents/)
-Phase 5: ドメイン固有の憲法条項追加
+Phase 5: Anchor Circle Policies の追加
 Phase 6: 検証 & スモークテスト
 ```
 
@@ -54,7 +54,8 @@ Phase 6完了後、プロジェクトは完全に配線されています:
 ```
 your-project/
 ├── .claude/
-│   ├── CONSTITUTION.md      # 10条の普遍条項 + ローカル条項
+│   ├── ANCHOR.md            # Anchor Circle Purpose (人間が著者)
+│   ├── CONSTITUTION.md      # 12条の普遍条項 + Anchor Circle Policies
 │   ├── settings.json        # 3つのhook配線
 │   ├── agents/              # 生成された3-5ロール (governanceが進化させる)
 │   ├── hooks/               # ロギング + 閾値チェック
@@ -69,21 +70,23 @@ your-project/
 
 Auto-run は **opt-in**。`GOVERNANCE_AUTO_RUN=1` を環境変数にセットしない限り、SessionEnd hookは threshold trip をログするだけで起動しません。リモートへの push はさらに `GOVERNANCE_AUTO_PUSH=1` でゲートされます。フラグ未設定時、governanceは無監督下で外部に影響を与えません。
 
-## アーキテクチャパターン
+## ロール配置レイアウト
 
-| パターン | 適用場面 |
+Phase 2 の非規範的補助。Holacracy primitive ではない。
+
+| レイアウト | Anchor Circle Purpose の性質 |
 |---|---|
-| Pipeline | 段階的な直線作業 |
-| Fan-out / Fan-in | 多角的調査 |
-| Expert Pool | 多様で受動的な要求 |
+| Pipeline | 段階的・直線的 |
+| Fan-out / Fan-in | 多角的 |
+| Expert Pool | 多様で受動的 |
 | Producer / Reviewer | 品質重視 |
-| Supervisor | 動的・計画駆動 |
+| Supervisor | 動的・不確実 |
 | Network | 探索的 |
 
 ## 更新
 
 - **スキル** は `gh skill update --all` で自動更新。SKILL.mdのfrontmatterに provenance情報が書き込まれており、バージョン番号だけでなく実コンテンツのドリフトを検知。
-- **Scaffold** (プロジェクト内のCONSTITUTION universal部・hooks・tests) は `./scripts/update-scaffold.sh` で更新。`.claude/agents/`, `.claude/state/`, CONSTITUTIONのLOCAL部分は保持されます。
+- **Scaffold** (プロジェクト内のCONSTITUTION universal部・hooks・tests) は `./scripts/update-scaffold.sh` で更新。`.claude/agents/`, `.claude/state/`, `.claude/ANCHOR.md`, CONSTITUTIONのLOCAL部分は保持されます。
 
 ## 2層モデル
 

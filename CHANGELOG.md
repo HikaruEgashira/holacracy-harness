@@ -1,5 +1,33 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- **BREAKING**: Phase 1 reframed from "Domain Analysis" to "Anchor
+  Circle Articulation". The free-form domain summary is replaced by
+  an explicit Anchor Circle Purpose (Holacracy v5) authored by the
+  user, written to `.claude/ANCHOR.md`.
+- **BREAKING**: Role schema adds required `serves_purpose` field
+  (CONSTITUTION clause 11). `HARNESS_STRICT_PURPOSE=1` makes the
+  validator fail-closed; default is warn for one release.
+- **BREAKING**: CONSTITUTION LOCAL section renamed from
+  "Domain-specific invariants" to "Anchor Circle Policies".
+  Numbering shifts to start at 13 (after new clauses 11/12).
+- **BREAKING**: `governance` may not modify `.claude/ANCHOR.md`
+  (clause 12); it is human-authored.
+- `update-scaffold.sh` preserves `.claude/ANCHOR.md` like LOCAL.
+- Architecture Patterns reframed as non-normative role-arrangement
+  heuristics; `governance` does not consult them.
+- Phase 5 reframed as Anchor Circle Policies generation.
+
+### Added
+- `.claude/ANCHOR.md` template at
+  `skills/harness/references/scaffold/ANCHOR.md`.
+- CONSTITUTION clauses 11 (`serves_purpose` required) and 12
+  (ANCHOR.md is read-only to governance).
+- Validator checks for `serves_purpose` presence and ANCHOR.md
+  existence.
+
 ## [0.1.0] — Unreleased
 
 ### Added

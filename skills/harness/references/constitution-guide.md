@@ -1,76 +1,49 @@
 # Constitution Guide
 
-`.claude/CONSTITUTION.md` is the single fixed point. The `governance`
-skill reads it before every run and must not violate any clause. Even
-governance cannot edit the constitution itself.
+`.claude/CONSTITUTION.md` holds governance rules. The Anchor Circle
+Purpose lives separately in `.claude/ANCHOR.md`.
 
 ## Two regions
-
-The constitution is split by HTML comment markers:
 
 ```markdown
 <!-- BEGIN UNIVERSAL -->
 ## Universal invariants
-1. ...
-10. ...
+1. ...  12. ...
 <!-- END UNIVERSAL -->
 
 <!-- BEGIN LOCAL -->
-## Domain-specific invariants
-11. ...
+## Anchor Circle Policies
+13. ...
 <!-- END LOCAL -->
 ```
 
-- **UNIVERSAL** is overwritten by `./scripts/update-scaffold.sh`.
-  Do not edit between the markers.
-- **LOCAL** is yours and the harness skill's. Phase 5 of the workflow
-  appends domain-specific clauses here. Never overwritten.
+- **UNIVERSAL** — overwritten by `update-scaffold.sh`. Don't edit.
+- **LOCAL** — Anchor Circle Policies, written by Phase 5. Numbering
+  starts at 13. Never overwritten.
 
-## Universal clauses (1–10)
+## What goes in LOCAL
 
-Provided by the scaffold. Cover:
-
-- **Self-protection** (1, 9): governance can't delete itself or edit
-  protected files
-- **Role hygiene** (2, 3, 5): valid frontmatter, domain exclusivity,
-  observation period before deletion
-- **Provenance** (4): all changes go through Git
-- **Auto-mode safety** (6, 7, 8, 10): cooldown, change-cap, role-count
-  bounds, archive retention
-
-## Domain-specific clauses (LOCAL)
-
-Examples:
+Policies derive from the Anchor Circle Purpose / Domains /
+Accountabilities. Examples:
 
 ```markdown
-## Domain-specific invariants  (customer support)
-11. No role may persist customer PII to disk outside the redacted/ directory.
-12. Roles handling escalations must log to escalation-log.jsonl.
+## Anchor Circle Policies  (research)
+13. Every claim must trace to a citation in sources/.
+14. Roles must not delete primary sources, only annotate them.
 
-## Domain-specific invariants  (research)
-11. Every claim a role outputs must trace to a citation in sources/.
-12. Roles must not delete primary sources, only annotate them.
-
-## Domain-specific invariants  (writing)
-11. Producer/Reviewer pattern is permitted between writer and editor on drafts/.
+## Anchor Circle Policies  (writing)
+13. Producer/Reviewer Domain overlap is permitted between writer and editor on drafts/.
 ```
 
-## Good clauses
+A good Policy:
 
-A constitutional clause:
-
-1. **Survives role changes.** When governance adds/removes/modifies
-   roles, the clause should still hold. If a clause depends on a
-   specific role's name, it belongs in the role file, not the constitution.
-2. **Is mechanically checkable.** Either by validator script or simple
-   pattern. Vague aspirations don't belong here.
-3. **Encodes risk, not preference.** Genuinely harmful violations,
-   not stylistic choices.
+1. Survives role changes (no role-name dependency).
+2. Is mechanically checkable.
+3. Encodes risk, not preference.
+4. Traces to the Anchor Circle.
 
 ## What does NOT belong
 
-- "Use Python 3.11" → `pyproject.toml`
-- "Write commit messages in English" → commit hook
-- "Keep coverage above 80%" → CI
-- "The pr-reviewer role must be invoked on every PR" → role's
-  `description` field
+- Tooling config → `pyproject.toml`, CI, hooks
+- Role-specific behavior → role's `description` or body
+- Mission/vision-style aspiration → `.claude/ANCHOR.md` Purpose

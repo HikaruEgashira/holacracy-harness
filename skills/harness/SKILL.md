@@ -1,75 +1,67 @@
 ---
 name: harness
-description: Designs a Holacracy-style role architecture for any Claude Code project and writes the runtime scaffold. Triggered by "build a harness", "set up a harness", "ハーネスを構成して", "ロール構成を設計して".
+description: Designs a Holacracy Anchor Circle for a Claude Code project and writes the runtime scaffold. Triggered by "build a harness", "set up a harness", "ハーネスを構成して", "ロール構成を設計して".
 ---
 
 # harness
 
-You are the **harness** meta-skill — Layer 1 of the holacracy-harness.
+Layer 1 of the holacracy-harness. Facilitates the human (the Anchor
+Circle's Lead Link) through six phases: elicit the Anchor Circle
+Purpose, design 3–5 roles that serve it, write the scaffold, validate.
 
-Given a project's domain description, you design 3–5 Holacracy-style
-**roles** and write the runtime scaffold (constitution, hooks,
-governance machinery) into the project.
+The human authors the Anchor Circle Purpose. You facilitate; you do
+not author it for them.
 
-Layer 2 (`governance` skill) takes over after Phase 6 and evolves the
-role set autonomously based on invocation statistics.
+Layer 2 (`governance`) takes over after Phase 6 and evolves the role
+set, bounded by `.claude/CONSTITUTION.md` and informed by
+`.claude/ANCHOR.md`.
 
 ## Triggers
-
-Activate when the user says:
 
 - "build a harness for this project"
 - "set up a harness"
 - "design an agent team"
 - "ハーネスを構成して" / "ロール構成を設計して"
 
-If the user has not specified a domain, ask **once** in their language.
-
 ## Six-Phase Workflow
 
-### Phase 1 — Domain Analysis
+### Phase 1 — Anchor Circle Articulation
 
-Understand the domain in the user's words. Identify:
+Elicit, in the user's language, in this order:
 
-- The **purpose** of the work (why this project exists)
-- The **types of work** that recur
-- The **artifacts** the project produces or maintains
-- Any **non-goals** the user wants to exclude
+1. **Purpose** *(required, one sentence, future-state)* — reject
+   procedures, slogans, multi-sentence answers.
+2. **Domains** *(optional, often empty)* — resources owned by the
+   organization-as-a-whole.
+3. **Accountabilities** *(optional, often empty)* — obligations held
+   at the whole level.
+4. **Out of bounds** *(optional)* — captured for Phase 5.
 
-Produce a one-paragraph domain summary. Confirm with the user before
-proceeding.
+Write into `.claude/ANCHOR.md` between BEGIN/END markers using
+`references/scaffold/ANCHOR.md`. Confirm with the user before Phase 2.
 
 ### Phase 2 — Role Architecture Design
 
-Pick **one** architecture pattern from `references/role-design-patterns.md`.
-Sketch 3 to 5 roles for the chosen pattern.
+Ask: *"What capacities does this Purpose require that no single
+existing role can supply?"* Pick one layout from
+`references/role-design-patterns.md` (non-normative aids). Sketch 3–5
+roles, each with:
 
-Each role drafted as:
+- `purpose` (future-state sentence)
+- `serves_purpose` (one line tying to the Anchor Circle Purpose;
+  reuse Anchor vocabulary verbatim where natural)
+- `accountabilities` (≥ 1)
+- `domains` (≥ 0)
 
-- **Purpose** — a future-state sentence ("X is always Y"), not a task
-- **Accountabilities** — 2 to 4 ongoing activities
-- **Domain** — file or resource patterns this role exclusively owns
-
-Use `references/role-template.md` as the canonical format.
-
-**Critical constraints:**
-
-- Flat namespace. No sub-circles, no parent-child.
-- Domain exclusivity. No two roles' `domain` patterns may overlap.
-  The Producer/Reviewer pattern is the sole exception, requiring an
-  explicit declaration in CONSTITUTION's LOCAL section.
-
-Present the architecture to the user before writing files.
+See `references/role-template.md`. Constraints: flat namespace,
+domain exclusivity (clause 3), Producer/Reviewer overlap requires a
+LOCAL Policy declaration. Confirm with the user before writing files.
 
 ### Phase 3 — Scaffold Installation
 
-Resolve the scaffold source path. The harness skill is installed by
-`gh skill install`, so the scaffold is at:
+Resolve scaffold path:
 
 ```bash
-# Try in this order:
-#   1. project-scope skill install
-#   2. user-scope skill install
 SKILL_ROOT_CANDIDATES=(
   ".claude/skills/harness/references/scaffold"
   "$HOME/.claude/skills/harness/references/scaffold"
@@ -80,15 +72,13 @@ for c in "${SKILL_ROOT_CANDIDATES[@]}"; do
 done
 ```
 
-Then copy the scaffold into the project (idempotent — `-n` preserves
-any user customizations):
+Copy idempotently:
 
 ```bash
 mkdir -p .claude/hooks .claude/state .claude/agents tests scripts
 cp -n "$SCAFFOLD/CONSTITUTION.md" .claude/CONSTITUTION.md
+cp -n "$SCAFFOLD/ANCHOR.md"       .claude/ANCHOR.md
 cp -n "$SCAFFOLD/settings.json"   .claude/settings.json
-# `.gitignore` is shipped as `gitignore` (no leading dot) so it survives
-# distribution channels that strip dotfiles. Rename on write.
 cp -n "$SCAFFOLD/gitignore"       .claude/.gitignore
 cp -n "$SCAFFOLD/hooks/"*.sh "$SCAFFOLD/hooks/"*.py .claude/hooks/
 cp -n "$SCAFFOLD/tests/"*.sh tests/
@@ -97,40 +87,34 @@ chmod +x .claude/hooks/*.sh .claude/hooks/*.py tests/*.sh scripts/*.sh
 touch .claude/state/.gitkeep
 ```
 
-Note: `.claude/skills/governance/` is **not** copied here. Governance
-is installed separately via:
+`-n` preserves the Phase 1 Anchor Circle draft.
+
+The governance skill is installed separately:
 
 ```bash
 gh skill install HikaruEgashira/holacracy-harness governance \
   --agent claude-code --scope user
 ```
 
-Tell the user to run that command if the governance skill is not
-already present at `~/.claude/skills/governance/SKILL.md` or
-`.claude/skills/governance/SKILL.md`.
+Tell the user if it isn't already at `~/.claude/skills/governance/SKILL.md`
+or `.claude/skills/governance/SKILL.md`.
 
 ### Phase 4 — Role File Generation
 
-Write each role designed in Phase 2 to `.claude/agents/<role-name>.md`
-using the template format. Set `created_at` to today (UTC). Leave
-invocation_stats fields at their defaults.
+Write each Phase 2 role to `.claude/agents/<n>.md` per the template.
+Set `created_at` to today (UTC). `serves_purpose` is required (clause
+11) and should reuse Anchor Circle Purpose vocabulary verbatim where
+natural.
 
-### Phase 5 — Domain-specific Constitution Clauses
+### Phase 5 — Anchor Circle Policies
 
-If Phase 1 surfaced natural invariants (e.g., "all customer data must
-be redacted"), append them as numbered clauses (starting from 11) into
-the LOCAL section of `.claude/CONSTITUTION.md`:
+Append rules surfaced in Phase 1 as numbered clauses (starting at 13)
+between the BEGIN/END LOCAL markers in `.claude/CONSTITUTION.md`.
+Never edit UNIVERSAL.
 
-```bash
-# The CONSTITUTION uses BEGIN/END markers:
-#   <!-- BEGIN LOCAL -->  ...  <!-- END LOCAL -->
-# Append between them. Never modify the UNIVERSAL region — it is
-# overwritten by ./scripts/update-scaffold.sh on upstream updates.
-```
-
-If the chosen architecture is **Producer/Reviewer**, declare which
-roles are permitted to share a domain in this LOCAL section. Otherwise
-the domain-checker hook will reject the configuration.
+If the layout is **Producer/Reviewer**, declare the permitted
+overlapping pair as a Policy here, otherwise the domain-checker hook
+will reject.
 
 ### Phase 6 — Validation & Smoke Test
 
@@ -142,31 +126,23 @@ done
 tests/governance-tests.sh
 ```
 
-Common fixes if validation fails:
-- Missing `purpose` or `accountabilities` → re-emit the role file
-- Domain overlap → narrow one pattern, or declare Producer/Reviewer
-  exception in CONSTITUTION's LOCAL section
+Common fixes: missing required fields → re-emit; domain overlap →
+narrow or declare Policy; ANCHOR.md missing → re-run Phase 3.
 
-End with **2-3 smoke-test prompts** the user can try, each designed to
-naturally invoke one of the new roles.
+End with 2–3 smoke-test prompts, each designed to invoke one role.
 
-## Updating the scaffold later
+## Updating later
 
-The user runs `./scripts/update-scaffold.sh` when they want to pull
-upstream improvements to the constitution UNIVERSAL region, hooks,
-and tests. The script preserves their roles, state, and the LOCAL
-section of the constitution.
-
-The user runs `gh skill update --all` to refresh this skill itself
-and the governance skill.
+`./scripts/update-scaffold.sh` refreshes UNIVERSAL, hooks, tests.
+Preserves `.claude/agents/`, `.claude/state/`, CONSTITUTION LOCAL,
+and `.claude/ANCHOR.md`. `gh skill update --all` refreshes the skills
+themselves.
 
 ## What you do not do
 
-- Do not generate code-review or test-running roles unless the domain
-  genuinely calls for them. Domain analysis comes first.
-- Do not exceed 5 initial roles. Layer 2 will grow the set organically.
-- Do not edit `.claude/CONSTITUTION.md`'s UNIVERSAL section. It belongs
-  to upstream and is overwritten on update-scaffold.
-- Do not edit `.claude/skills/governance/SKILL.md` or `.claude/hooks/*`.
-  Those are managed by upstream.
-- Do not create sub-circles. Flat only.
+- Author the Anchor Circle Purpose for the user.
+- Edit `.claude/ANCHOR.md` after Phase 1 confirmation.
+- Generate roles unrelated to the Purpose.
+- Exceed 5 initial roles.
+- Edit UNIVERSAL, hooks, or governance skill files.
+- Create sub-circles.

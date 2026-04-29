@@ -1,20 +1,18 @@
 # Role Template
 
-Every role file under `.claude/agents/` follows this format exactly so
-the `governance` skill can parse roles without surprises.
-
-## File format
+Format for `.claude/agents/<name>.md`. The `governance` skill parses
+this exact shape.
 
 ```markdown
 ---
 name: <kebab-case-name>
 description: <one-sentence trigger for Claude Code's auto-invocation>
 purpose: <future-state sentence — "X is always Y", not a task>
+serves_purpose: <one line: how this role serves the Anchor Circle Purpose>
 accountabilities:
-  - <continuous activity 1>
-  - <continuous activity 2>
+  - <continuous activity>
 domains:
-  - <glob or path pattern this role exclusively owns>
+  - <glob pattern this role exclusively owns>
 invocation_stats:
   invocations_30d: 0
   success_rate: null
@@ -31,37 +29,18 @@ You are the **<n>** role. Your purpose is to ensure <restate purpose>.
 <2 to 4 explicit non-responsibilities>
 ```
 
-## Key concepts
+## Field rules
 
-### Purpose vs. Description
-
-- `description` is what Claude Code reads to decide *whether* to invoke.
-  A trigger written for the matcher.
-- `purpose` is *why this role exists*. A future state. Not a procedure.
-
-| Bad purpose (procedural) | Good purpose (state) |
-|---|---|
-| "Reviews pull requests" | "Changes merged to main are safe and maintainable" |
-| "Writes blog posts" | "The blog reflects current thinking accurately and on schedule" |
-
-### Accountabilities
-
-Continuous activities, present participle ("Reviewing X", "Maintaining Y").
-Not tasks, not outputs.
-
-### Domains
-
-A `domain` is what the role **exclusively owns**. No other role may
-modify items inside this domain.
-
-Good: `tests/**`, `docs/decisions/*.md`, `PLAN.md`
-Bad: `everything in this repo`, `code quality`
-
-### Invocation stats
-
-Read and written by `governance`. Do not edit by hand.
-
-- `invocations_30d` — count in 30-day window
-- `success_rate` — fraction without error; null if < 5
-- `last_used` — UTC timestamp
-- `created_at` — drives clause 5 (no deletion within 7 days)
+- `description` — auto-invocation trigger; what Claude Code matches on.
+- `purpose` — future state, not a procedure. Bad: "Reviews PRs". Good:
+  "Changes merged to main are safe and maintainable".
+- `serves_purpose` — required by clause 11. Reuse vocabulary from
+  `.claude/ANCHOR.md` Purpose verbatim where natural; that gives
+  governance a mechanical traceability hook. Validator only checks
+  presence.
+- `accountabilities` — present participle, ≥ 1.
+- `domains` — exclusive ownership. ≥ 0 (a Reviewing-only role has none).
+  No two roles may overlap (clause 3) except a declared Producer/
+  Reviewer pair.
+- `invocation_stats` — written by governance only. Do not edit by hand.
+  `created_at` drives clause 5 (no deletion within 7 days).

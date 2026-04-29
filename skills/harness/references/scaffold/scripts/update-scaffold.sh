@@ -2,7 +2,8 @@
 # update-scaffold.sh
 # Pulls scaffold updates from the harness skill installed via gh skill.
 # Updates: CONSTITUTION UNIVERSAL section, hooks/, tests/, this script itself.
-# Preserves: .claude/agents/, .claude/state/, CONSTITUTION LOCAL section.
+# Preserves: .claude/agents/, .claude/state/, CONSTITUTION LOCAL section,
+#            .claude/ANCHOR.md (Anchor Circle declaration — never overwritten).
 set -e
 
 # Locate the installed harness skill
@@ -91,10 +92,18 @@ if [ ! -f .claude/.gitignore ] && [ -f "$SCAFFOLD/gitignore" ]; then
   echo "  ✓ wrote .claude/.gitignore (state/ excluded)"
 fi
 
+# === 6. Ensure .claude/ANCHOR.md exists (NEVER overwrite — human-authored) ===
+# The Anchor Circle Purpose lives here. Constitution clause 12 forbids
+# upstream and governance from modifying it.
+if [ ! -f .claude/ANCHOR.md ] && [ -f "$SCAFFOLD/ANCHOR.md" ]; then
+  cp "$SCAFFOLD/ANCHOR.md" .claude/ANCHOR.md
+  echo "  ✓ wrote .claude/ANCHOR.md (template — fill in your Anchor Circle Purpose)"
+fi
+
 # Note: we do NOT overwrite this script itself or update-scaffold.sh,
 # because we are currently executing it. To update update-scaffold.sh,
 # run: cp "$SCAFFOLD/scripts/update-scaffold.sh" scripts/update-scaffold.sh
 
 echo
 echo "✓ Scaffold updated. Review with: git diff"
-echo "  Untouched: .claude/agents/, .claude/state/, CONSTITUTION LOCAL section"
+echo "  Untouched: .claude/agents/, .claude/state/, .claude/ANCHOR.md, CONSTITUTION LOCAL section"

@@ -1,5 +1,7 @@
 # Tension Detection
 
+Six statistical proxies. Starting points for inquiry, not ground truth.
+
 | Tension | Detection rule | Proposal verb |
 |---|---|---|
 | Over-use | `invocations_30d` for a role > 3 × median across roles, AND ≥ 10 invocations | split |
@@ -31,8 +33,9 @@ Default to **sharpen** (narrow one role's domain). Merging loses
 information. Only merge if both purposes are essentially identical.
 
 ### Uncovered → add
-Cluster the uncovered prompts. Multiple clusters → add a role for the
-largest only. Next run will catch the others.
+Cluster uncovered prompts. Multiple clusters → add for the largest
+only. Draft `purpose` and `serves_purpose` reusing `.claude/ANCHOR.md`
+Purpose vocabulary verbatim where natural.
 
 ### Override → restore + flag
 Git-revert the offending governance commit at the role file level.

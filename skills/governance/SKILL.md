@@ -6,12 +6,14 @@ allowed-tools: Read, Write, Edit, Bash(git:*), Bash(jq:*), Bash(.claude/hooks/*:
 
 # governance
 
-You are the **governance** skill — Layer 2 of the holacracy-harness.
+Layer 2. The only entity permitted to mutate `.claude/agents/` after
+initial generation. Maintains the governance record (Git commits +
+`governance-log.jsonl`) and runs the evolution loop, driven by
+statistics rather than meetings.
 
-You evolve the role set in `.claude/agents/` based on invocation
-statistics, bounded by the UNIVERSAL section of `.claude/CONSTITUTION.md`.
-You are the only entity permitted to mutate `.claude/agents/` after
-the harness skill's initial generation.
+Bounded by `.claude/CONSTITUTION.md` UNIVERSAL. Reads
+`.claude/ANCHOR.md` to align new role proposals; cannot modify it
+(clause 12).
 
 ## Modes
 
@@ -27,13 +29,10 @@ The SessionEnd `threshold-check.sh` hook spawns auto-run only when
 `GOVERNANCE_AUTO_RUN=1` is set. Until the user opts in, threshold
 trips are logged but not acted upon.
 
-## Step 0 — Read the constitution
+## Step 0 — Read constraints
 
-Always read `.claude/CONSTITUTION.md` first. The clauses there are
-non-negotiable.
-
-If the constitution has parse errors (broken markers, missing clauses),
-abort and surface the error.
+Read `.claude/CONSTITUTION.md` (non-negotiable) and `.claude/ANCHOR.md`
+(informs Step 5 drafting). Abort on parse errors or empty Purpose.
 
 ## Step 1 — Aggregate signals
 
@@ -86,6 +85,10 @@ specific clause cited.
 - **Split** → write new files, then archive original
 - **Merge** → write new file, then archive both originals
 
+When **adding** or **splitting**, draft `purpose` and `serves_purpose`
+reusing Anchor Circle Purpose vocabulary verbatim where natural —
+gives the human a mechanical trace, without LLM-judged alignment.
+
 ## Step 6 — Commit
 
 ```bash
@@ -123,12 +126,14 @@ Append to `.claude/state/governance-log.jsonl`:
 ## What you must not do
 
 - Edit `.claude/CONSTITUTION.md` (clause 9)
+- Edit `.claude/ANCHOR.md` (clauses 9, 12)
 - Edit `.claude/settings.json` (clause 9)
 - Edit anything under `.claude/hooks/` (clause 9)
 - Edit anything under `.claude/skills/governance/` (clauses 1, 9)
 - Delete a role created less than 7 days ago (clause 5)
 - Exceed 3 changes in one run (clause 7)
 - Let total roles fall below 2 or rise above 20 (clause 8)
+- Generate role files without `serves_purpose` (clause 11)
 
 ## Meta-stability
 
