@@ -1,0 +1,128 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Run shellcheck
+        run: |
+          set -e
+          shopt -s globstar nullglob
+          files=(
+            skills/**/*.sh
+          )
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "no shell scripts found"; exit 0
+          fi
+          shellcheck -x -S warning "${files[@]}"
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile
+        run: |
+          python -m compileall -q skills/harness/references/scaffold/hooks
+      - name: Lint with ruff
+        run: |
+          pipx install ruff
+          ruff check skills/harness/references/scaffold/hooks
+
+  skill-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate SKILL.md frontmatter
+        run: |
+          python3 - <<'PY'
+          import sys, pathlib, re
+          required = {"name", "description"}
+          failures = []
+          for p in pathlib.Path("skills").glob("*/SKILL.md"):
+              text = p.read_text(encoding="utf-8")
+              m = re.match(r"^---\n(.*?)\n---", text, re.DOTALL)
+              if not m:
+                  failures.append(f"{p}: missing frontmatter")
+                  continue
+              fm = m.group(1)
+              keys = {line.split(":", 1)[0].strip() for line in fm.splitlines() if ":" in line}
+              missing = required - keys
+              if missing:
+                  failures.append(f"{p}: missing keys {missing}")
+          if failures:
+              for f in failures:
+                  print(f, file=sys.stderr)
+              sys.exit(1)
+          print("ok: all SKILL.md frontmatter valid")
+          PY
+
+  scaffold-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+      - name: Materialize scaffold + run validators against an empty role
+        run: |
+          set -e
+          export CLAUDE_PROJECT_DIR="$PWD/_smoke"
+          mkdir -p "$CLAUDE_PROJECT_DIR"/.claude/agents \
+                    "$CLAUDE_PROJECT_DIR"/.claude/hooks \
+                    "$CLAUDE_PROJECT_DIR"/.claude/state \
+                    "$CLAUDE_PROJECT_DIR"/.claude/skills/governance \
+                    "$CLAUDE_PROJECT_DIR"/tests
+          cp skills/harness/references/scaffold/hooks/* "$CLAUDE_PROJECT_DIR"/.claude/hooks/
+          cp skills/harness/references/scaffold/tests/*  "$CLAUDE_PROJECT_DIR"/tests/
+          cp skills/governance/SKILL.md "$CLAUDE_PROJECT_DIR"/.claude/skills/governance/SKILL.md
+          chmod +x "$CLAUDE_PROJECT_DIR"/.claude/hooks/*.sh \
+                   "$CLAUDE_PROJECT_DIR"/.claude/hooks/*.py \
+                   "$CLAUDE_PROJECT_DIR"/tests/*.sh
+          # write two minimal valid role files (clause 8: role count >= 2)
+          cat > "$CLAUDE_PROJECT_DIR"/.claude/agents/alpha.md <<'MD'
+          ---
+          name: alpha
+          description: smoke role alpha
+          purpose: Alpha is always covered
+          accountabilities:
+            - Existing
+          domains:
+            - "alpha/**"
+          ---
+          MD
+          cat > "$CLAUDE_PROJECT_DIR"/.claude/agents/bravo.md <<'MD'
+          ---
+          name: bravo
+          description: smoke role bravo
+          purpose: Bravo is always covered
+          accountabilities:
+            - Existing
+          domains:
+            - "bravo/**"
+          ---
+          MD
+          # init a git repo so clause 4 passes
+          (cd "$CLAUDE_PROJECT_DIR" && git init -q && git config user.email ci@example.com && git config user.name ci)
+          # validators
+          "$CLAUDE_PROJECT_DIR"/.claude/hooks/constitution-validator.sh "$CLAUDE_PROJECT_DIR"/.claude/agents/sample.md
+          "$CLAUDE_PROJECT_DIR"/.claude/hooks/domain-checker.sh
+          "$CLAUDE_PROJECT_DIR"/tests/governance-tests.sh
+          # threshold-check should exit 0 (no signals, nothing to do)
+          "$CLAUDE_PROJECT_DIR"/.claude/hooks/threshold-check.sh
