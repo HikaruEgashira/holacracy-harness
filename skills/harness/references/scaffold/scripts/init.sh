@@ -9,13 +9,24 @@ chmod +x .claude/hooks/*.sh .claude/hooks/*.py tests/*.sh scripts/*.sh
 mkdir -p .claude/state .claude/agents
 touch .claude/state/.gitkeep
 
+# Ensure runtime state stays out of git (PII protection)
+GITIGNORE=".claude/.gitignore"
+if [ ! -f "$GITIGNORE" ]; then
+  cat > "$GITIGNORE" <<'EOF'
+# Scaffold runtime state. Contains user prompts and stats — never commit.
+state/
+agents/.archive/
+EOF
+  echo "  ✓ wrote .claude/.gitignore (state/ excluded)"
+fi
+
 # Verify governance skill is installed
 GOV_PROJ=".claude/skills/governance/SKILL.md"
 GOV_USER="$HOME/.claude/skills/governance/SKILL.md"
 if [ ! -f "$GOV_PROJ" ] && [ ! -f "$GOV_USER" ]; then
   echo
   echo "! governance skill not found. Install with:"
-  echo "    gh skill install plenoai/holacracy-harness governance --agent claude-code --scope user"
+  echo "    gh skill install HikaruEgashira/holacracy-harness governance --agent claude-code --scope user"
   echo
 fi
 

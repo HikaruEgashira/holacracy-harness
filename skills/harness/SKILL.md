@@ -87,9 +87,12 @@ any user customizations):
 mkdir -p .claude/hooks .claude/state .claude/agents tests scripts
 cp -n "$SCAFFOLD/CONSTITUTION.md" .claude/CONSTITUTION.md
 cp -n "$SCAFFOLD/settings.json"   .claude/settings.json
-cp -n "$SCAFFOLD/hooks/"*         .claude/hooks/
-cp -n "$SCAFFOLD/tests/"*         tests/
-cp -n "$SCAFFOLD/scripts/"*       scripts/
+# `.gitignore` is shipped as `gitignore` (no leading dot) so it survives
+# distribution channels that strip dotfiles. Rename on write.
+cp -n "$SCAFFOLD/gitignore"       .claude/.gitignore
+cp -n "$SCAFFOLD/hooks/"*.sh "$SCAFFOLD/hooks/"*.py .claude/hooks/
+cp -n "$SCAFFOLD/tests/"*.sh tests/
+cp -n "$SCAFFOLD/scripts/"*.sh scripts/
 chmod +x .claude/hooks/*.sh .claude/hooks/*.py tests/*.sh scripts/*.sh
 touch .claude/state/.gitkeep
 ```
@@ -98,7 +101,7 @@ Note: `.claude/skills/governance/` is **not** copied here. Governance
 is installed separately via:
 
 ```bash
-gh skill install plenoai/holacracy-harness governance \
+gh skill install HikaruEgashira/holacracy-harness governance \
   --agent claude-code --scope user
 ```
 

@@ -5,3 +5,8 @@ __pycache__/
 *.pyc
 .idea/
 .vscode/
+
+# scaffold runtime state — contains user prompts, never commit
+.claude/state/
+!.claude/state/.gitkeep
+.claude/agents/.archive/

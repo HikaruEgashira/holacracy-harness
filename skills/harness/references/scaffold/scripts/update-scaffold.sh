@@ -15,7 +15,7 @@ done
 
 if [ -z "$SCAFFOLD" ]; then
   echo "✗ harness skill not found locally."
-  echo "  Install: gh skill install plenoai/holacracy-harness harness --agent claude-code --scope user"
+  echo "  Install: gh skill install HikaruEgashira/holacracy-harness harness --agent claude-code --scope user"
   exit 1
 fi
 
@@ -83,6 +83,13 @@ fi
 # === 4. Refresh settings.json ===
 cp -f "$SCAFFOLD/settings.json" .claude/settings.json
 echo "  ✓ settings.json refreshed"
+
+# === 5. Ensure .claude/.gitignore exists (do not overwrite if user customized) ===
+# Source file is `gitignore` (no leading dot) for distribution safety; rename on copy.
+if [ ! -f .claude/.gitignore ] && [ -f "$SCAFFOLD/gitignore" ]; then
+  cp "$SCAFFOLD/gitignore" .claude/.gitignore
+  echo "  ✓ wrote .claude/.gitignore (state/ excluded)"
+fi
 
 # Note: we do NOT overwrite this script itself or update-scaffold.sh,
 # because we are currently executing it. To update update-scaffold.sh,
