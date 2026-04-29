@@ -16,22 +16,31 @@ ROLE_COUNT=$(find "$AGENTS_DIR" -maxdepth 1 -name '*.md' -type f 2>/dev/null | w
 # Clause 4
 [ ! -d "$PROJECT_DIR/.git" ] && fail "clause 4: not a git repository"
 
-# Clause 7
+# Clause 7 — most recent run applied at most 3 changes
 if [ -s "$LOG" ]; then
-  LAST_MIN=$(tail -n 1 "$LOG" | jq -r '.ts' 2>/dev/null | cut -c1-16 || echo "")
-  if [ -n "$LAST_MIN" ]; then
-    LAST_RUN_COUNT=$(grep -c "\"ts\": *\"${LAST_MIN}" "$LOG" 2>/dev/null || echo 0)
+  LAST_MIN=$(tail -n 1 "$LOG" | jq -r '.ts // empty' 2>/dev/null | cut -c1-16)
+  if [ -n "$LAST_MIN" ] && [ "$LAST_MIN" != "null" ]; then
+    LAST_RUN_COUNT=$(grep -c "\"ts\":\"${LAST_MIN}" "$LOG" 2>/dev/null) || LAST_RUN_COUNT=0
+    LAST_RUN_COUNT=${LAST_RUN_COUNT//[!0-9]/}
+    [ -z "$LAST_RUN_COUNT" ] && LAST_RUN_COUNT=0
     [ "$LAST_RUN_COUNT" -gt 3 ] && fail "clause 7: most recent run applied $LAST_RUN_COUNT changes (max 3)"
   fi
 fi
 
-# Clause 10
+# Clause 10 — archive directories must be YYYY-MM-DD. Portable across GNU/BSD date.
 if [ -d "$AGENTS_DIR/.archive" ]; then
   for d in "$AGENTS_DIR/.archive"/*; do
     [ -d "$d" ] || continue
     DIR_DATE=$(basename "$d")
-    DIR_S=$(date -u -d "$DIR_DATE" +%s 2>/dev/null || echo 0)
-    [ "$DIR_S" -eq 0 ] && fail "clause 10: archive dir name not a valid date: $d"
+    DIR_OK=$(python3 -c '
+import sys, datetime
+try:
+    datetime.date.fromisoformat(sys.argv[1])
+    print(1)
+except Exception:
+    print(0)
+' "$DIR_DATE")
+    [ "$DIR_OK" != "1" ] && fail "clause 10: archive dir name not a valid date: $d"
   done
 fi
 exit $failed
