@@ -17,11 +17,15 @@ the harness skill's initial generation.
 
 | Trigger | Mode | Behavior |
 |---|---|---|
-| `/governance auto-run` | auto | Apply ≤ 3 changes without confirmation. Hook-invoked. |
+| `/governance auto-run` | auto | Apply ≤ 3 changes without confirmation. Hook-invoked. Commit on branch. Push only if `GOVERNANCE_AUTO_PUSH=1`. |
 | `/governance dry-run` | dry | Print proposals only. No file changes. |
-| `/governance` | interactive | Show proposals. Ask before each. |
+| `/governance` | interactive | Show proposals. Ask before each. Ask before pushing. |
 
 Default mode (no args): interactive.
+
+The SessionEnd `threshold-check.sh` hook spawns auto-run only when
+`GOVERNANCE_AUTO_RUN=1` is set. Until the user opts in, threshold
+trips are logged but not acted upon.
 
 ## Step 0 — Read the constitution
 
@@ -88,11 +92,23 @@ specific clause cited.
 git checkout -b governance/$(date -u +%F)
 git add .claude/agents/
 git commit -m "governance: <verb> <role> [+N more]"
-git push origin HEAD
 ```
 
-In auto-run: push, do not merge. The user reviews.
-In interactive: ask before pushing.
+**Push is opt-in.** Governance is reversible at the commit level (the
+user can drop the branch), so creating a branch is safe. Pushing exposes
+the change to a shared remote and is therefore gated behind an explicit
+signal.
+
+- **auto-run**: push only when `GOVERNANCE_AUTO_PUSH=1` is set in the
+  environment. Otherwise leave the branch local; the user runs
+  `git push origin HEAD` when they choose to review remotely.
+- **interactive / dry-run**: ask before pushing. Never push silently.
+
+```bash
+if [ "${GOVERNANCE_AUTO_PUSH:-0}" = "1" ]; then
+  git push origin HEAD
+fi
+```
 
 ## Step 7 — Log
 

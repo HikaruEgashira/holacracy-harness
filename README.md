@@ -17,12 +17,12 @@ Both auto-update via `gh skill update --all`.
 
 ```bash
 # Project-scope (skills available only in this project)
-gh skill install plenoai/holacracy-harness harness    --agent claude-code --scope project
-gh skill install plenoai/holacracy-harness governance --agent claude-code --scope project
+gh skill install HikaruEgashira/holacracy-harness harness    --agent claude-code --scope project
+gh skill install HikaruEgashira/holacracy-harness governance --agent claude-code --scope project
 
 # Or user-scope (available everywhere)
-gh skill install plenoai/holacracy-harness harness    --agent claude-code --scope user
-gh skill install plenoai/holacracy-harness governance --agent claude-code --scope user
+gh skill install HikaruEgashira/holacracy-harness harness    --agent claude-code --scope user
+gh skill install HikaruEgashira/holacracy-harness governance --agent claude-code --scope user
 ```
 
 Pin to a release: append `@v0.1.0`.
@@ -70,6 +70,12 @@ threshold-check hook decides whether to launch `governance auto-run`.
 The cooldown is 24 hours; auto-runs apply at most 3 changes per
 invocation, on a branch named `governance/<UTC-date>`.
 
+Auto-run is **opt-in**. Set `GOVERNANCE_AUTO_RUN=1` in your shell to
+enable detached background runs from the hook. Pushing the resulting
+branch to the remote is separately gated behind `GOVERNANCE_AUTO_PUSH=1`.
+With neither flag set, threshold trips are logged but governance never
+acts unsupervised.
+
 ## Architecture patterns
 
 | Pattern | Use when |
@@ -113,7 +119,7 @@ continuously after that, bounded by an editable constitution.
 ## Repo layout
 
 ```
-plenoai/holacracy-harness/
+HikaruEgashira/holacracy-harness/
 ├── skills/
 │   ├── harness/                              # Layer 1 skill
 │   │   ├── SKILL.md

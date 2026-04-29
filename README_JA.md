@@ -17,12 +17,12 @@
 
 ```bash
 # プロジェクトスコープ (このプロジェクトのみ)
-gh skill install plenoai/holacracy-harness harness    --agent claude-code --scope project
-gh skill install plenoai/holacracy-harness governance --agent claude-code --scope project
+gh skill install HikaruEgashira/holacracy-harness harness    --agent claude-code --scope project
+gh skill install HikaruEgashira/holacracy-harness governance --agent claude-code --scope project
 
 # または ユーザースコープ (全プロジェクト共通)
-gh skill install plenoai/holacracy-harness harness    --agent claude-code --scope user
-gh skill install plenoai/holacracy-harness governance --agent claude-code --scope user
+gh skill install HikaruEgashira/holacracy-harness harness    --agent claude-code --scope user
+gh skill install HikaruEgashira/holacracy-harness governance --agent claude-code --scope user
 ```
 
 リリースに固定: `@v0.1.0` を付加。
@@ -66,6 +66,8 @@ your-project/
 ```
 
 以降は`governance`スキルが運用を引き継ぎます。SessionEnd hookが threshold-check を実行し、24時間クールダウン経過 + 閾値突破時に `governance auto-run` を自動起動。1回の実行で最大3変更、`governance/<UTC-date>` ブランチに反映。
+
+Auto-run は **opt-in**。`GOVERNANCE_AUTO_RUN=1` を環境変数にセットしない限り、SessionEnd hookは threshold trip をログするだけで起動しません。リモートへの push はさらに `GOVERNANCE_AUTO_PUSH=1` でゲートされます。フラグ未設定時、governanceは無監督下で外部に影響を与えません。
 
 ## アーキテクチャパターン
 
