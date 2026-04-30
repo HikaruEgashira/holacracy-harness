@@ -30,19 +30,39 @@ if [ ! -f "$ANCHOR" ]; then
   exit 1
 fi
 
-# Clause 2: required frontmatter fields
+# Clause 2: required frontmatter fields. Restrict checks to the YAML
+# frontmatter block (between the leading and trailing '---') so the role
+# body cannot accidentally satisfy a missing field.
 if [ -f "$FILE" ]; then
+  FM=$(awk '/^---[[:space:]]*$/ { c++; next } c == 1 { print } c >= 2 { exit }' "$FILE")
+  if [ -z "$FM" ]; then
+    echo "violation of clause 2: missing or empty YAML frontmatter in $FILE" >&2
+    exit 1
+  fi
+
   for field in name purpose accountabilities; do
-    if ! grep -q "^${field}:" "$FILE"; then
+    if ! printf '%s\n' "$FM" | grep -q "^${field}:"; then
       echo "violation of clause 2: missing field '${field}' in $FILE" >&2
       exit 1
     fi
   done
 
+  # Accountabilities must have ≥ 1 list item.
+  ACC_COUNT=$(printf '%s\n' "$FM" | awk '
+    /^accountabilities:/ { in_acc = 1; next }
+    in_acc && /^[A-Za-z_][A-Za-z0-9_]*:/ { in_acc = 0 }
+    in_acc && /^[[:space:]]+-[[:space:]]+/ { n++ }
+    END { print n + 0 }
+  ')
+  if [ "${ACC_COUNT:-0}" -lt 1 ]; then
+    echo "violation of clause 2: accountabilities must have ≥ 1 item in $FILE" >&2
+    exit 1
+  fi
+
   # Clause 11: serves_purpose must be present.
   # Default: warn (1-release grace period for pre-clause-11 role files).
   # Strict: HARNESS_STRICT_PURPOSE=1 → fail.
-  if ! grep -q "^serves_purpose:" "$FILE"; then
+  if ! printf '%s\n' "$FM" | grep -q "^serves_purpose:"; then
     if [ "${HARNESS_STRICT_PURPOSE:-0}" = "1" ]; then
       echo "violation of clause 11: missing 'serves_purpose' in $FILE" >&2
       exit 1

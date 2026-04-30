@@ -91,6 +91,8 @@ jobs:
                     "$CLAUDE_PROJECT_DIR"/tests
           cp skills/harness/references/scaffold/hooks/* "$CLAUDE_PROJECT_DIR"/.claude/hooks/
           cp skills/harness/references/scaffold/tests/*  "$CLAUDE_PROJECT_DIR"/tests/
+          cp skills/harness/references/scaffold/ANCHOR.md "$CLAUDE_PROJECT_DIR"/.claude/ANCHOR.md
+          cp skills/harness/references/scaffold/CONSTITUTION.md "$CLAUDE_PROJECT_DIR"/.claude/CONSTITUTION.md
           cp skills/governance/SKILL.md "$CLAUDE_PROJECT_DIR"/.claude/skills/governance/SKILL.md
           chmod +x "$CLAUDE_PROJECT_DIR"/.claude/hooks/*.sh \
                    "$CLAUDE_PROJECT_DIR"/.claude/hooks/*.py \

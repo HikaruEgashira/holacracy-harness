@@ -67,17 +67,21 @@ print("  ✓ CONSTITUTION.md UNIVERSAL section updated")
 PY
 
 # === 2. Update hooks ===
+# `set -e` (top of script) aborts on any failure; success echo only fires on
+# clean refresh. mkdir -p creates the target dir if missing.
 if [ -d "$SCAFFOLD/hooks" ]; then
-  cp -f "$SCAFFOLD/hooks/"*.sh .claude/hooks/ 2>/dev/null || true
-  cp -f "$SCAFFOLD/hooks/"*.py .claude/hooks/ 2>/dev/null || true
-  chmod +x .claude/hooks/*.sh .claude/hooks/*.py 2>/dev/null || true
+  mkdir -p .claude/hooks
+  cp -f "$SCAFFOLD/hooks/"*.sh .claude/hooks/
+  cp -f "$SCAFFOLD/hooks/"*.py .claude/hooks/
+  chmod +x .claude/hooks/*.sh .claude/hooks/*.py
   echo "  ✓ hooks/ refreshed"
 fi
 
 # === 3. Update tests ===
 if [ -d "$SCAFFOLD/tests" ]; then
-  cp -f "$SCAFFOLD/tests/"*.sh tests/ 2>/dev/null || true
-  chmod +x tests/*.sh 2>/dev/null || true
+  mkdir -p tests
+  cp -f "$SCAFFOLD/tests/"*.sh tests/
+  chmod +x tests/*.sh
   echo "  ✓ tests/ refreshed"
 fi
 
