@@ -45,9 +45,12 @@ def load_jsonl(path):
 
 def parse_ts(s):
     try:
-        return datetime.fromisoformat(s.replace("Z", "+00:00"))
-    except (ValueError, TypeError):
+        dt = datetime.fromisoformat(str(s).replace("Z", "+00:00"))
+    except (ValueError, TypeError, AttributeError):
         return None
+    if dt.tzinfo is None:
+        return None
+    return dt.astimezone(timezone.utc)
 
 
 def within_window(record, cutoff):
@@ -58,7 +61,10 @@ def within_window(record, cutoff):
 def detect_overuse(stats_in_window):
     counts = {}
     for r in stats_in_window:
-        counts[r["role"]] = counts.get(r["role"], 0) + 1
+        role = r.get("role")
+        if not role:
+            continue
+        counts[role] = counts.get(role, 0) + 1
     if len(counts) < 3:
         return False
     values = list(counts.values())
@@ -73,7 +79,7 @@ def detect_overuse(stats_in_window):
 
 
 def detect_underuse(stats_in_window):
-    used = {r["role"] for r in stats_in_window}
+    used = {r.get("role") for r in stats_in_window if r.get("role")}
     if not AGENTS_DIR.exists():
         return False
     cutoff_age = datetime.now(timezone.utc) - timedelta(
@@ -91,7 +97,10 @@ def detect_underuse(stats_in_window):
 def detect_failure(stats_in_window):
     by_role = {}
     for r in stats_in_window:
-        by_role.setdefault(r["role"], []).append(bool(r.get("success", True)))
+        role = r.get("role")
+        if not role:
+            continue
+        by_role.setdefault(role, []).append(bool(r.get("success", True)))
     for results in by_role.values():
         if len(results) < MIN_INVOCATIONS_FOR_FAILURE_SIGNAL:
             continue

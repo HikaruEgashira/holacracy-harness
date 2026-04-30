@@ -16,12 +16,21 @@ ROLE_COUNT=$(find "$AGENTS_DIR" -maxdepth 1 -name '*.md' -type f 2>/dev/null | w
 # Clause 4
 [ ! -d "$PROJECT_DIR/.git" ] && fail "clause 4: not a git repository"
 
-# Clause 7 — most recent run applied at most 3 changes
+# Clause 7 — most recent run applied at most 3 changes. Key on the last
+# record's `branch` (governance/<UTC-date>) and count only entries that
+# were actually applied with a change verb. The previous minute-prefix
+# heuristic conflated unrelated runs and counted rejected proposals.
 if [ -s "$LOG" ]; then
-  LAST_MIN=$(tail -n 1 "$LOG" | jq -r '.ts // empty' 2>/dev/null | cut -c1-16)
-  if [ -n "$LAST_MIN" ] && [ "$LAST_MIN" != "null" ]; then
-    LAST_RUN_COUNT=$(grep -c "\"ts\":\"${LAST_MIN}" "$LOG" 2>/dev/null) || LAST_RUN_COUNT=0
-    LAST_RUN_COUNT=${LAST_RUN_COUNT//[!0-9]/}
+  LAST_BRANCH=$(tail -n 1 "$LOG" | jq -r '.branch // empty' 2>/dev/null)
+  if [ -n "$LAST_BRANCH" ] && [ "$LAST_BRANCH" != "null" ]; then
+    LAST_RUN_COUNT=$(jq -r --arg b "$LAST_BRANCH" '
+      select(
+        .branch == $b and
+        .status == "applied" and
+        (.verb == "add" or .verb == "update" or .verb == "delete" or
+         .verb == "split" or .verb == "merge")
+      ) | 1
+    ' "$LOG" 2>/dev/null | wc -l | tr -d " ")
     [ -z "$LAST_RUN_COUNT" ] && LAST_RUN_COUNT=0
     [ "$LAST_RUN_COUNT" -gt 3 ] && fail "clause 7: most recent run applied $LAST_RUN_COUNT changes (max 3)"
   fi

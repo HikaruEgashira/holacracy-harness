@@ -47,6 +47,10 @@ fi
 # allowed-tools allowlist). Set GOVERNANCE_PERMISSION_MODE=bypassPermissions
 # to widen.
 PERM_MODE="${GOVERNANCE_PERMISSION_MODE:-acceptEdits}"
+# Record detached-start in governance-log.jsonl so the 24h cooldown sees this
+# run on the next SessionEnd (otherwise multiple detached runs could stack
+# within a single day).
+echo "{\"ts\":\"$(date -u +%FT%TZ)\",\"verb\":\"governance-detached-start\",\"permission_mode\":\"$PERM_MODE\"}" >> "$LOG"
 (
   timeout 1800 claude -p "/governance auto-run" \
     --permission-mode "$PERM_MODE" \
