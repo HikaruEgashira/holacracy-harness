@@ -89,8 +89,10 @@ jobs:
                     "$CLAUDE_PROJECT_DIR"/.claude/state \
                     "$CLAUDE_PROJECT_DIR"/.claude/skills/governance \
                     "$CLAUDE_PROJECT_DIR"/tests
-          cp skills/harness/references/scaffold/hooks/* "$CLAUDE_PROJECT_DIR"/.claude/hooks/
-          cp skills/harness/references/scaffold/tests/*  "$CLAUDE_PROJECT_DIR"/tests/
+          cp skills/harness/references/scaffold/hooks/*.sh \
+             skills/harness/references/scaffold/hooks/*.py \
+             "$CLAUDE_PROJECT_DIR"/.claude/hooks/
+          cp skills/harness/references/scaffold/tests/*.sh "$CLAUDE_PROJECT_DIR"/tests/
           cp skills/harness/references/scaffold/ANCHOR.md "$CLAUDE_PROJECT_DIR"/.claude/ANCHOR.md
           cp skills/harness/references/scaffold/CONSTITUTION.md "$CLAUDE_PROJECT_DIR"/.claude/CONSTITUTION.md
           cp skills/governance/SKILL.md "$CLAUDE_PROJECT_DIR"/.claude/skills/governance/SKILL.md

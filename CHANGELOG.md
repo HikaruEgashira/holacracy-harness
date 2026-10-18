@@ -28,6 +28,13 @@
 - Validator checks for `serves_purpose` presence and ANCHOR.md
   existence.
 
+### Fixed
+- CI `scaffold-smoke` no longer fails when `__pycache__` exists in the
+  scaffold `hooks/` directory (e.g. left by the `python` job's
+  `compileall`). The materialization step now copies only `*.sh`/`*.py`
+  hooks and `*.sh` tests instead of globbing `*`, which previously hit
+  `cp: -r not specified; omitting directory .../__pycache__`.
+
 ## [0.1.0] — Unreleased
 
 ### Added
