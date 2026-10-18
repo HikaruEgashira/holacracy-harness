@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Fixed
+- CI workflow pinned `actions/checkout` and `actions/setup-python` to
+  non-existent major tags (`@v7`), which made every job fail before it
+  could start ("unable to resolve action"). Pinned back to the
+  supported majors (`checkout@v4`, `setup-python@v5`).
+
 ### Changed
 - **BREAKING**: Phase 1 reframed from "Domain Analysis" to "Anchor
   Circle Articulation". The free-form domain summary is replaced by
