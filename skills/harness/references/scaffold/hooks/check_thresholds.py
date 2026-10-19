@@ -14,6 +14,10 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+# datetime.UTC exists only on Python 3.11+; the scaffold supports system
+# Python 3.9/3.10, where timezone(timedelta(0)) is the same UTC offset.
+UTC = timezone(timedelta(0))
+
 WINDOW_DAYS = 30
 MIN_INVOCATIONS_FOR_FAILURE_SIGNAL = 5
 MIN_INVOCATIONS_FOR_OVERUSE_SIGNAL = 10
@@ -45,12 +49,15 @@ def load_jsonl(path):
 
 def parse_ts(s):
     try:
-        dt = datetime.fromisoformat(str(s).replace("Z", "+00:00"))
+        text = str(s)
+        if text.endswith("Z"):
+            text = text[:-1] + "+00:00"
+        dt = datetime.fromisoformat(text)
     except (ValueError, TypeError, AttributeError):
         return None
     if dt.tzinfo is None:
         return None
-    return dt.astimezone(timezone.utc)
+    return dt.astimezone(UTC)
 
 
 def within_window(record, cutoff):
@@ -82,11 +89,11 @@ def detect_underuse(stats_in_window):
     used = {r.get("role") for r in stats_in_window if r.get("role")}
     if not AGENTS_DIR.exists():
         return False
-    cutoff_age = datetime.now(timezone.utc) - timedelta(
+    cutoff_age = datetime.now(UTC) - timedelta(
         days=ROLE_AGE_FOR_DELETION_DAYS
     )
     for f in AGENTS_DIR.glob("*.md"):
-        mtime = datetime.fromtimestamp(f.stat().st_mtime, tz=timezone.utc)
+        mtime = datetime.fromtimestamp(f.stat().st_mtime, tz=UTC)
         if mtime > cutoff_age:
             continue
         if f.stem not in used:
@@ -122,7 +129,7 @@ def detect_uncovered(prompts_in_window, stats_in_window):
 
 
 def main():
-    cutoff = datetime.now(timezone.utc) - timedelta(days=WINDOW_DAYS)
+    cutoff = datetime.now(UTC) - timedelta(days=WINDOW_DAYS)
     stats = [r for r in load_jsonl(STATS) if within_window(r, cutoff)]
     prompts = [r for r in load_jsonl(PROMPTS) if within_window(r, cutoff)]
 
